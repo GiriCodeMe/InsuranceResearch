@@ -1,0 +1,57 @@
+---
+name: speckit-taskstoissues
+description: Convert existing tasks into actionable, dependency-ordered GitHub issues
+  for the feature based on available design artifacts.
+compatibility: Requires spec-kit project structure with .specify/ directory
+metadata:
+  author: github-spec-kit
+  source: templates/commands/taskstoissues.md
+disable-model-invocation: true
+allowed-tools: [Bash, Read, Write, Edit, Glob, Grep]
+---
+
+## When to use
+
+Use this skill when:
+- A tasks.md exists and the user wants to track work in GitHub Issues
+- The user asks 'create GitHub issues from these tasks' or 'push tasks to GitHub'
+- Handing off tasks to a team or managing work via a GitHub project board
+
+Prerequisite: `/speckit.tasks` must be complete and a GitHub repo must be configured.
+
+## Output
+
+- GitHub issues created for each task in tasks.md, with labels and dependency links
+- Summary of created issues with URLs
+
+## Pre-flight Checklist
+
+- [ ] `tasks.md` exists and is complete
+- [ ] `gh` CLI is authenticated (`gh auth status`)
+- [ ] User has confirmed which tasks to push (all or subset)
+
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Outline
+
+1. Run `.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. From the executed script, extract the path to **tasks**.
+1. Get the Git remote by running:
+
+```bash
+git config --get remote.origin.url
+```
+
+> [!CAUTION]
+> ONLY PROCEED TO NEXT STEPS IF THE REMOTE IS A GITHUB URL
+
+1. For each task in the list, use the GitHub MCP server to create a new issue in the repository that is representative of the Git remote.
+
+> [!CAUTION]
+> UNDER NO CIRCUMSTANCES EVER CREATE ISSUES IN REPOSITORIES THAT DO NOT MATCH THE REMOTE URL
