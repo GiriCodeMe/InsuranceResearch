@@ -73,6 +73,33 @@ The atomic unit this feature produces (spec Key Entities; requirements.MD Eviden
 - No two EvidenceRecords in the same run may share identical `(termId, predicate, value, provenance.documentId, provenance.location.anchor)` — duplicate detection for FR-010.
 - On re-run over an unchanged Document, previously-produced records for that exact `(termId, predicate, value, location.anchor)` are not re-submitted (FR-010, FR-011 preserves prior records rather than overwriting).
 
+## Chunk
+
+An intermediate, addressable slice of a Document's text that extractors run against. Exists so `location.anchor` can point at something stable smaller than a whole page.
+
+| Field | Type | Notes |
+|---|---|---|
+| `chunkId` | string | Stable id, derived from `documentId` + position |
+| `documentId` | string | FK → Document |
+| `anchor` | string | Section/anchor identifier within the document (becomes `provenance.location.anchor` when a Chunk yields evidence) |
+| `text` | string | Raw text of the chunk |
+
+## ConceptCandidate
+
+An extractor's raw, pre-evidence output for a single (Chunk, ProductLineTerm) pair — the intermediate step before it is packaged as an `EvidenceRecord`. Kept as a distinct shape so extractor unit tests can assert "did we even find a candidate claim" separately from "did we build a valid, provenance-complete EvidenceRecord from it."
+
+| Field | Type | Notes |
+|---|---|---|
+| `termId` | string | FK → ProductLineTerm |
+| `predicate` | enum | Same enum as EvidenceRecord.predicate |
+| `rawValue` | string | Unvalidated extracted text |
+| `chunkId` | string | FK → Chunk |
+| `explicit` | boolean | Set by the extractor; `false` candidates are discarded and never become EvidenceRecords (enforces FR-003) |
+
 ## State transitions
 
 None — EvidenceRecords are immutable once produced (append-only). A source revision produces new records with a new `retrievedDate`, never a mutation of an existing record (FR-011).
+
+## Shared contracts out of scope for this feature
+
+`CanonicalConcept`, `TaxonomyEdge`, `InferenceRecord`, `GraphSnapshot`, and `ValidationReport` are defined in `packages/contracts` as part of the repo-wide shared schema layer, but this feature neither produces nor consumes them — they belong to the Taxonomy Reasoning Agent and Validator (future features). They are listed here only so it's clear why they appear in `packages/contracts` alongside the entities this feature does use.

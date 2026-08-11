@@ -44,25 +44,34 @@ specs/001-insurance-research-agent/
 
 ### Source Code (repository root)
 
+This feature is implemented inside a monorepo whose full layout also anticipates the (not-yet-built) Taxonomy Reasoning Agent, Validator, and mock backends from Architecture.MD, so that `packages/contracts` becomes the single source of truth all of them share — this is a deliberate, explicit decision by the project owner, superseding the single-project layout originally drafted here.
+
 ```text
-src/
-├── agents/
-│   └── source-intelligence/
-│       ├── seed/                    # seed-sources.json + seed loader (the "discovery" step for this MVP)
-│       ├── fetch/                    # HTTP retrieval of seed documents (retry/timeout, per-source failure isolation)
-│       ├── extract/                  # one extractor per evidence predicate (definition, altLabel, broader/narrower, contextSignal, appliesTo, providesCoverageFor, identifier, regulatedBy/definedBy)
-│       ├── evidence/                  # EvidenceRecord builder + EvidenceStoreClient (strict envelope parsing, per requirements.MD)
-│       └── pipeline.ts                # orchestrates seed -> fetch -> extract -> write, isolates per-source failures (FR-009)
-├── shared/
-│   ├── types/                        # EvidenceRecord, Provenance, Source, Document, ProductLineTerm (shared with future agents)
-│   └── config/                       # target product-line terms + aliases (the 10-concept seed backbone)
-tests/
-├── unit/                              # one suite per extractor
-├── contract/                          # EvidenceStoreClient against the mock EvidenceStore (incl. ambiguous-envelope negative test)
-└── integration/                       # full pipeline run over the seed list -> asserts evidence records land in the mock store with complete provenance
+insurance-taxonomy-agent/                 # this repo, InsuranceKBAgents
+├── apps/
+│   ├── worker/src/
+│   │   ├── agents/
+│   │   │   ├── source-intelligence/      # THIS FEATURE
+│   │   │   │   ├── agent.ts
+│   │   │   │   ├── planner.ts
+│   │   │   │   ├── discovery.ts          # seed-list loader (Phase 8 of overall roadmap)
+│   │   │   │   ├── source-evaluator.ts   # source authority/quality checks only — NOT taxonomy reconciliation
+│   │   │   │   ├── extractor.ts          # one function per evidence predicate
+│   │   │   │   └── prompts.ts
+│   │   │   └── taxonomy-reasoning/       # out of scope for this feature
+│   │   ├── workers/source-intelligence.worker.ts   # BullMQ entrypoint for this feature
+│   │   ├── queues/, graph/, evidence/, validators/, reports/, config/, index.ts
+│   ├── mock-graph-api/src/               # out of scope for this feature (Phase 2 of overall roadmap)
+│   └── mock-evidence-store/src/          # dependency this feature writes to (Phase 3 of overall roadmap)
+├── packages/
+│   ├── contracts/src/                    # Zod schemas — shared source of truth (Phase 1 of overall roadmap)
+│   ├── graph-client/, evidence-client/, taxonomy-core/
+├── database/
+├── tests/{unit,integration,e2e}/
+├── docker-compose.yml, package.json, tsconfig.json, .env.example
 ```
 
-**Structure Decision**: Single project (Option 1). This feature only builds the Source Intelligence Agent; `src/agents/` is deliberately structured so the Taxonomy Reasoning Agent and Validator (out of scope here, per Architecture.MD) can land as sibling directories in later features without restructuring this one. `src/shared/` holds only what's genuinely reused across those future agents (evidence/provenance types, the product-line term list) — nothing else is pulled forward speculatively.
+**Structure Decision**: This feature's own code lives at `apps/worker/src/agents/source-intelligence/` and `apps/worker/src/workers/source-intelligence.worker.ts`, consuming `packages/contracts` (evidence/document/chunk schemas) and `packages/evidence-client`. It depends on `apps/mock-evidence-store` existing (built as shared infrastructure, not by this feature) to have somewhere to write. The Graph API, Taxonomy Reasoning Agent, and Validator are explicitly out of scope for this feature's code, even though their scaffolding exists as sibling directories per the overall repo roadmap (contracts → mock-graph-api → mock-evidence-store → clients → validator → BullMQ → seed taxonomy → source-intelligence agent).
 
 ## Complexity Tracking
 
