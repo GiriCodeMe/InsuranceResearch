@@ -57,3 +57,41 @@ export async function validateTaxonomy(
     createdAt: new Date().toISOString()
   });
 }
+
+/**
+ * A run that can't even complete (e.g. the Graph API returned an ambiguous envelope, or is
+ * unreachable) still produces a persistable NO_GO report rather than throwing past the caller —
+ * Architecture.MD requires the validation worker to "persist report even on failure (NO_GO)".
+ */
+export function buildFailureReport(options: ValidateTaxonomyOptions, error: unknown): ValidationReport {
+  return ValidationReportSchema.parse({
+    requestId: options.requestId,
+    schemeId: options.schemeId,
+    taxonomyVersion: options.taxonomyVersion,
+    status: "NO_GO",
+    errorCount: 1,
+    warningCount: 0,
+    checkedEdges: 0,
+    issues: [
+      {
+        ruleId: "validator.execution-error",
+        severity: "error",
+        message: error instanceof Error ? error.message : String(error)
+      }
+    ],
+    createdAt: new Date().toISOString()
+  });
+}
+
+/** validateTaxonomy, but a thrown error becomes a NO_GO report instead of propagating. */
+export async function validateTaxonomySafe(
+  graphClient: GraphClient,
+  evidenceClient: EvidenceClient,
+  options: ValidateTaxonomyOptions
+): Promise<ValidationReport> {
+  try {
+    return await validateTaxonomy(graphClient, evidenceClient, options);
+  } catch (error) {
+    return buildFailureReport(options, error);
+  }
+}

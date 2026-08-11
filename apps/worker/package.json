@@ -1,0 +1,25 @@
+{
+  "name": "@insurance-kb/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@insurance-kb/contracts": "*",
+    "@insurance-kb/evidence-client": "*",
+    "@insurance-kb/graph-client": "*",
+    "@insurance-kb/taxonomy-core": "*",
+    "bullmq": "^5.12.0",
+    "ioredis": "^5.4.1",
+    "pg": "^8.12.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.6"
+  }
+}

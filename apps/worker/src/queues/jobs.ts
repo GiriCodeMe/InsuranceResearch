@@ -1,0 +1,17 @@
+import { z } from "zod";
+
+export const TAXONOMY_REASONING_QUEUE_NAME = "taxonomyReasoning";
+export const TAXONOMY_VALIDATION_QUEUE_NAME = "taxonomyValidation";
+
+export const TaxonomyReasoningJobDataSchema = z.object({
+  schemeId: z.string().min(1),
+  taxonomyVersion: z.string().min(1)
+});
+export type TaxonomyReasoningJobData = z.infer<typeof TaxonomyReasoningJobDataSchema>;
+
+export const TaxonomyValidationJobDataSchema = z.object({
+  requestId: z.string().min(1),
+  schemeId: z.string().min(1),
+  taxonomyVersion: z.string().min(1)
+});
+export type TaxonomyValidationJobData = z.infer<typeof TaxonomyValidationJobDataSchema>;
