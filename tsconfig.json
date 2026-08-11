@@ -15,6 +15,8 @@
   },
   "references": [
     { "path": "packages/contracts" },
+    { "path": "packages/graph-client" },
+    { "path": "packages/evidence-client" },
     { "path": "apps/mock-graph-api" },
     { "path": "apps/mock-evidence-store" }
   ],
