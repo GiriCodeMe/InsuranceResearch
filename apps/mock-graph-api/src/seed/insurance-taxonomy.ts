@@ -1,30 +1,87 @@
-import type { Entity, Relation } from "@insurance-kb/contracts";
+import type { CanonicalConcept, Entity, InferenceRecord, Relation, TaxonomyEdge } from "@insurance-kb/contracts";
+import { conceptToEntity, edgeToRelation, inferenceRecordToEntity } from "@insurance-kb/taxonomy-core";
 
 /**
- * The 10-concept MVP taxonomy backbone from requirements.MD, seeded as generic
- * entities/relations. Full TaxonomyEdge semantics (assertionMode, InferenceRecord
- * linkage) belong to the Taxonomy Reasoning Agent (out of scope for this mock).
+ * The 10-concept MVP taxonomy backbone from requirements.MD, expressed as proper domain objects
+ * (not just labeled placeholders) and mapped to the wire format via taxonomy-core's mapper. Every
+ * seed edge is assertionMode="inferred" with a matching method="seed_skeleton" InferenceRecord
+ * (confidence=0.50, status=provisional, no evidence) — exactly the seed policy governance rule 5
+ * requires, so reseeding produces a graph that validateTaxonomy reports as GO.
  */
-export const seedEntities: Entity[] = [
-  { name: "CommercialInsurance", entityType: "ProductLine", observations: ["prefLabel: Commercial Insurance", "contextScope: commercial"] },
-  { name: "PersonalInsurance", entityType: "ProductLine", observations: ["prefLabel: Personal Insurance", "contextScope: personal"] },
-  { name: "CommercialPropertyInsurance", entityType: "ProductLine", observations: ["prefLabel: Property Insurance", "altLabel: Commercial Property Insurance", "contextScope: commercial"] },
-  { name: "CommercialAutoInsurance", entityType: "ProductLine", observations: ["prefLabel: Auto Insurance", "altLabel: Commercial Auto Insurance", "contextScope: commercial"] },
-  { name: "GeneralLiability", entityType: "ProductLine", observations: ["prefLabel: General Liability", "contextScope: commercial"] },
-  { name: "CommercialGeneralLiability", entityType: "ProductLine", observations: ["prefLabel: Commercial General Liability", "altLabel: CGL", "contextScope: commercial"] },
-  { name: "PersonalPropertyInsurance", entityType: "ProductLine", observations: ["prefLabel: Property Insurance", "altLabel: Personal Property Insurance", "contextScope: personal"] },
-  { name: "HomeownersInsurance", entityType: "ProductLine", observations: ["prefLabel: Homeowners Insurance", "contextScope: personal"] },
-  { name: "PersonalAutoInsurance", entityType: "ProductLine", observations: ["prefLabel: Auto Insurance", "altLabel: Personal Auto Insurance", "contextScope: personal"] },
-  { name: "PersonalAutoPolicy", entityType: "ProductLine", observations: ["prefLabel: Personal Auto Insurance", "altLabel: PAP", "contextScope: personal"] }
+export const SEED_SCHEME_ID = "insurance-taxonomy-us";
+
+export const seedConcepts: CanonicalConcept[] = [
+  { conceptId: "CommercialInsurance", prefLabel: "Commercial Insurance", altLabels: [], contextScope: "commercial" },
+  { conceptId: "PersonalInsurance", prefLabel: "Personal Insurance", altLabels: [], contextScope: "personal" },
+  {
+    conceptId: "CommercialPropertyInsurance",
+    prefLabel: "Property Insurance",
+    altLabels: ["Commercial Property Insurance"],
+    contextScope: "commercial"
+  },
+  {
+    conceptId: "CommercialAutoInsurance",
+    prefLabel: "Auto Insurance",
+    altLabels: ["Commercial Auto Insurance"],
+    contextScope: "commercial"
+  },
+  { conceptId: "GeneralLiability", prefLabel: "General Liability", altLabels: [], contextScope: "commercial" },
+  {
+    conceptId: "CommercialGeneralLiability",
+    prefLabel: "Commercial General Liability",
+    altLabels: ["CGL"],
+    contextScope: "commercial"
+  },
+  {
+    conceptId: "PersonalPropertyInsurance",
+    prefLabel: "Property Insurance",
+    altLabels: ["Personal Property Insurance"],
+    contextScope: "personal"
+  },
+  { conceptId: "HomeownersInsurance", prefLabel: "Homeowners Insurance", altLabels: [], contextScope: "personal" },
+  {
+    conceptId: "PersonalAutoInsurance",
+    prefLabel: "Auto Insurance",
+    altLabels: ["Personal Auto Insurance"],
+    contextScope: "personal"
+  },
+  {
+    conceptId: "PersonalAutoPolicy",
+    prefLabel: "Personal Auto Insurance",
+    altLabels: ["PAP"],
+    contextScope: "personal"
+  }
 ];
 
-export const seedRelations: Relation[] = [
-  { from: "CommercialPropertyInsurance", to: "CommercialInsurance", relationType: "broader" },
-  { from: "CommercialAutoInsurance", to: "CommercialInsurance", relationType: "broader" },
-  { from: "GeneralLiability", to: "CommercialInsurance", relationType: "broader" },
-  { from: "CommercialGeneralLiability", to: "GeneralLiability", relationType: "broader" },
-  { from: "PersonalPropertyInsurance", to: "PersonalInsurance", relationType: "broader" },
-  { from: "HomeownersInsurance", to: "PersonalPropertyInsurance", relationType: "broader" },
-  { from: "PersonalAutoInsurance", to: "PersonalInsurance", relationType: "broader" },
-  { from: "PersonalAutoPolicy", to: "PersonalAutoInsurance", relationType: "broader" }
+const seedEdgeTriples: Array<[edgeId: string, subjectConceptId: string, objectConceptId: string]> = [
+  ["seed-edge-1", "CommercialPropertyInsurance", "CommercialInsurance"],
+  ["seed-edge-2", "CommercialAutoInsurance", "CommercialInsurance"],
+  ["seed-edge-3", "GeneralLiability", "CommercialInsurance"],
+  ["seed-edge-4", "CommercialGeneralLiability", "GeneralLiability"],
+  ["seed-edge-5", "PersonalPropertyInsurance", "PersonalInsurance"],
+  ["seed-edge-6", "HomeownersInsurance", "PersonalPropertyInsurance"],
+  ["seed-edge-7", "PersonalAutoInsurance", "PersonalInsurance"],
+  ["seed-edge-8", "PersonalAutoPolicy", "PersonalAutoInsurance"]
 ];
+
+export const seedEdges: TaxonomyEdge[] = seedEdgeTriples.map(([edgeId, subjectConceptId, objectConceptId]) => ({
+  edgeId,
+  schemeId: SEED_SCHEME_ID,
+  subjectConceptId,
+  predicate: "broader",
+  objectConceptId,
+  assertionMode: "inferred",
+  supportingEvidenceIds: []
+}));
+
+export const seedInferenceRecords: InferenceRecord[] = seedEdges.map((edge) => ({
+  inferenceRecordId: `${edge.edgeId}-seed-inference`,
+  edgeId: edge.edgeId,
+  method: "seed_skeleton",
+  status: "provisional",
+  confidence: 0.5,
+  supportingEvidenceIds: []
+}));
+
+export const seedEntities: Entity[] = [...seedConcepts.map(conceptToEntity), ...seedInferenceRecords.map(inferenceRecordToEntity)];
+export const seedRelations: Relation[] = seedEdges.map(edgeToRelation);

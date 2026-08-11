@@ -60,12 +60,15 @@ describe("mock-graph-api", () => {
     expect(body[0].name).toBe("A");
   });
 
-  it("reseed loads the 10-concept MVP taxonomy backbone", async () => {
+  it("reseed loads the 10-concept MVP taxonomy backbone with its 8 seed_skeleton inference records", async () => {
     await app.inject({ method: "POST", url: "/__admin/reseed" });
     const res = await app.inject({ method: "POST", url: "/read_graph" });
     const body = JSON.parse(res.body);
-    expect(body.entities).toHaveLength(10);
-    expect(body.relations.length).toBeGreaterThan(0);
+    const concepts = body.entities.filter((e: { entityType: string }) => e.entityType === "ProductLine");
+    const inferenceRecords = body.entities.filter((e: { entityType: string }) => e.entityType === "InferenceRecord");
+    expect(concepts).toHaveLength(10);
+    expect(inferenceRecords).toHaveLength(8);
+    expect(body.relations).toHaveLength(8);
   });
 
   it("negative test: an ambiguous envelope response is itself a valid mock behavior for fault injection", async () => {

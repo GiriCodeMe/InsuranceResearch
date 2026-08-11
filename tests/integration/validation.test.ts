@@ -107,4 +107,21 @@ describe("end-to-end: HttpGraphClient + HttpEvidenceClient + validateTaxonomy ag
       })
     ).rejects.toThrow();
   });
+
+  it("Phase 7: reseeding the mock Graph API with the MVP taxonomy backbone produces a GO report", async () => {
+    await graphApp.inject({ method: "POST", url: "/__admin/reseed" });
+
+    const graphClient = new HttpGraphClient({ baseUrl: graphBaseUrl });
+    const evidenceClient = new HttpEvidenceClient({ baseUrl: evidenceBaseUrl });
+
+    const report = await validateTaxonomy(graphClient, evidenceClient, {
+      requestId: "e2e-seed-taxonomy",
+      schemeId: "insurance-taxonomy-us",
+      taxonomyVersion: "0.1.0"
+    });
+
+    expect(report.status).toBe("GO");
+    expect(report.errorCount).toBe(0);
+    expect(report.checkedEdges).toBe(8);
+  });
 });
