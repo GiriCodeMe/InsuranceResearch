@@ -1,0 +1,46 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: insurance_taxonomy
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/migrations:/docker-entrypoint-initdb.d
+
+  mock-graph-api:
+    build:
+      context: .
+      dockerfile: apps/mock-graph-api/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+
+  mock-evidence-store:
+    build:
+      context: .
+      dockerfile: apps/mock-evidence-store/Dockerfile
+    ports:
+      - "4001:4001"
+    environment:
+      PORT: 4001
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    depends_on:
+      - redis
+      - postgres
+      - mock-graph-api
+      - mock-evidence-store
+    env_file:
+      - .env
