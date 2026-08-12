@@ -45,7 +45,7 @@ describe("mock-evidence-store", () => {
 
   it("rejects a record with incomplete provenance (missing quote)", async () => {
     const { provenance, ...rest } = validRecord;
-    const { quote, ...provenanceWithoutQuote } = provenance;
+    const { quote: _quote, ...provenanceWithoutQuote } = provenance;
     const res = await app.inject({
       method: "POST",
       url: "/evidence",

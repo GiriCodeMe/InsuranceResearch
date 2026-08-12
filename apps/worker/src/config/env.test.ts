@@ -23,7 +23,7 @@ describe("loadEnv", () => {
   });
 
   it("throws when a required URL is missing", () => {
-    const { REDIS_URL, ...withoutRedis } = baseEnv;
+    const { REDIS_URL: _REDIS_URL, ...withoutRedis } = baseEnv;
     expect(() => loadEnv(withoutRedis)).toThrow();
   });
 
