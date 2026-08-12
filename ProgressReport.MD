@@ -36,9 +36,17 @@ business" is a different taxonomic dimension than the commercial/personal distin
 | Line | Concept added | Real source wired? |
 |---|---|---|
 | Life Insurance | `LifeInsurance` | **Yes** — NAIC consumer page verified structurally compatible; extracting real definitions live. |
-| Group Benefits | `GroupBenefits` | No — no single clear authoritative consumer source identified yet (spans ERISA/DOL and NAIC group-health/group-life material). |
-| Pet Insurance | `PetInsurance` | No — checked; NAIC has no dedicated consumer page for this topic. |
-| Crop Insurance | `CropInsurance` | No — USDA RMA (the authoritative source) uses a deeply-nested Drupal page structure the current extractor heuristic doesn't handle; verified unreachable-by-heuristic, not merely unchecked. |
+| Group Benefits | `GroupBenefits` | No — gap, no source identified yet |
+| Pet Insurance | `PetInsurance` | No — gap, no source identified yet |
+| Crop Insurance | `CropInsurance` | No — technical extraction gap (source known, extractor can't parse it yet) |
+
+A missing source is tracked as a **coverage gap to close, not evidence the concept is invalid** —
+this is now structural, not just a comment: `apps/worker/src/agents/source-intelligence/seed/coverage-gaps.ts`
+records every concept's status (`covered` / `gap` / `technical_extraction_gap`) and the concrete
+next action to close it, and `coverage-gaps.test.ts` fails the suite if this table ever drifts from
+what's actually wired in `seed-sources.ts` (a concept can't be silently marked "covered" without a
+real seed document, and a new concept can't be added without recording its status). The pipeline
+demo (`scripts/run-taxonomy-pipeline-demo.ts`) prints the full gap list with actions on every run.
 
 ### Tooling / project hygiene
 
@@ -68,8 +76,14 @@ business" is a different taxonomic dimension than the commercial/personal distin
   `identifier`. `broader`/`narrower`/`contextSignal`/`appliesTo`/`providesCoverageFor`/
   `regulatedBy`/`definedBy` are supported by the Taxonomy Reasoning Agent's logic and tested via
   crafted evidence, but the extractor doesn't yet produce them from live content.
-- **Group Benefits, Pet Insurance, and Crop Insurance have no real evidence sources wired** (see
-  table above) — the concepts exist in the taxonomy but nothing populates them yet.
+- **Group Benefits, Pet Insurance, and Crop Insurance have no real evidence sources wired** — the
+  concepts exist in the taxonomy but nothing populates them yet. Tracked with a concrete next
+  action per concept in `coverage-gaps.ts` (see above), not just noted here.
+- Several of the original 10 P&C concepts (`CommercialInsurance`, `PersonalInsurance`,
+  `CommercialPropertyInsurance`, `CommercialAutoInsurance`, `GeneralLiability`,
+  `CommercialGeneralLiability`, `PersonalPropertyInsurance`, `PersonalAutoPolicy`) are also
+  tracked as gaps in `coverage-gaps.ts` with a specific body to search next (ISO/ACORD/IRMI/III/
+  state DOI, depending on the concept) — previously only stated informally as "no source yet."
 
 ### Beyond the MVP scope — the rest of `OverviewOfAgents.md`'s 6-agent pipeline
 

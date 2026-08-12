@@ -14,6 +14,7 @@ import { validateTaxonomy } from "../packages/taxonomy-core/src/taxonomy-validat
 import { runSourceIntelligenceAgent } from "../apps/worker/src/agents/source-intelligence/agent.js";
 import { runTaxonomyReasoningAgent } from "../apps/worker/src/agents/taxonomy-reasoning/agent.js";
 import { SEED_PRODUCT_LINE_TERMS } from "../apps/worker/src/agents/source-intelligence/seed/product-line-terms.js";
+import { listGaps } from "../apps/worker/src/agents/source-intelligence/seed/coverage-gaps.js";
 
 const SCHEME_ID = "insurance-taxonomy-us";
 const TAXONOMY_VERSION = "0.1.0";
@@ -55,6 +56,11 @@ async function main(): Promise<void> {
     taxonomyVersion: TAXONOMY_VERSION
   });
   console.log(JSON.stringify(report, null, 2));
+
+  console.log("\n=== Known source coverage gaps (tracked, not treated as invalid concepts) ===");
+  for (const gap of listGaps()) {
+    console.log(`- ${gap.conceptId} [${gap.status}]: ${gap.action}`);
+  }
 
   await graphApp.close();
   await evidenceApp.close();

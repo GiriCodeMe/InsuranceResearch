@@ -4,21 +4,12 @@ import type { SeedDocument } from "../discovery.js";
 const NAIC: Source = { sourceId: "naic", organizationName: "National Association of Insurance Commissioners", sourceType: "regulator" };
 
 /**
- * Verified against the live pages on 2026-08-11/2026-08-12 (see __fixtures__ for the trimmed
- * structure this extractor is built against). Coverage is intentionally partial:
- *
- * - NAIC's public consumer pages only cover personal-lines topics in the P&C backbone
- *   (Homeowners, Auto) — there is no equivalent public consumer glossary entry for the
- *   commercial-lines terms (GL/CGL/CommercialProperty/CommercialAuto) at this source.
- * - Of the 4 new lines of business, only Life Insurance has a verified, structurally-compatible
- *   NAIC consumer page. Pet Insurance has no dedicated NAIC consumer page at all (checked).
- *   Crop Insurance's authoritative source (USDA RMA) uses a deeply-nested Drupal page structure
- *   this extractor's heading+paragraph heuristic doesn't handle — verified unreachable-by-heuristic,
- *   not merely unchecked. Group Benefits has no single clear authoritative consumer source
- *   identified yet (it spans ERISA/DOL and NAIC group-health/group-life material).
- *
- * Widening coverage further means adding more seed sources and, for Crop Insurance, extending the
- * extractor to handle nested content structures — tracked as follow-up, not fabricated here.
+ * Every document here was verified against the live page on the date noted (see __fixtures__ for
+ * the trimmed structure the extractor is built against). Coverage is intentionally partial —
+ * every concept without a document here is a tracked coverage gap, not evidence that concept is
+ * invalid. See coverage-gaps.ts for the full per-concept status and next action (searching a
+ * specific authoritative body vs. an extractor limitation), enforced against drift by
+ * coverage-gaps.test.ts.
  */
 export const DEFAULT_SEED_DOCUMENTS: SeedDocument[] = [
   {
