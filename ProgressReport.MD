@@ -18,7 +18,7 @@ run everything referenced here.
 | `packages/graph-client` / `packages/evidence-client` | Thin HTTP clients enforcing the envelope contract client-side; fail fast on ambiguous/malformed responses. |
 | `packages/taxonomy-core` | The governance validator — all 7 rules from `requirements.MD` (inferred-edge/InferenceRecord pairing, explicit-edge evidence, explicit/inferred mutual exclusion, seed_skeleton policy, validated-status evidence + confidence threshold, orphan detection, dangling evidence references) — plus the domain↔wire mapping layer (`graph-mapping.ts`) between `CanonicalConcept`/`TaxonomyEdge`/`InferenceRecord` and the Graph API's generic entity/relation model. |
 | `apps/worker` queues | BullMQ queue/job definitions for `sourceIntelligence`, `taxonomyReasoning`, `taxonomyValidation`; `PostgresValidationReportStore` (upsert on `request_id`/`scheme_id`/`taxonomy_version`). |
-| Seed taxonomy | 14 concepts total: the original 10-concept Commercial/Personal P&C backbone (8 `seed_skeleton` inferred edges, one matching `InferenceRecord` each) plus 4 standalone lines-of-business concepts (Life, Group Benefits, Pet, Crop — see below). Reseeding and validating produces **GO, 0 errors**. |
+| Seed taxonomy | 20 concepts total: the original 10-concept Commercial/Personal P&C backbone, 4 standalone lines-of-business concepts (Life, Group Benefits, Pet, Crop), and 6 Group Benefits sub-lines (Health→Medical/Vision/Dental, Disability, Life) — see below. 14 `seed_skeleton` inferred edges, one matching `InferenceRecord` each. Reseeding and validating produces **GO, 0 errors**. |
 
 ### Agents
 
@@ -31,22 +31,40 @@ run everything referenced here.
 
 Added 4 new top-level lines of business as standalone taxonomy segments (`contextScope: "both"` —
 modeled as siblings of Commercial/Personal Insurance, not nested under either, since "line of
-business" is a different taxonomic dimension than the commercial/personal distinction):
+business" is a different taxonomic dimension than the commercial/personal distinction), plus 6
+Group Benefits sub-lines matching the employer-sponsored-benefits hierarchy (Group Health Benefits
+→ Medical/Vision/Dental, Group Disability Benefits, Group Life Benefits — `contextScope:
+"commercial"`, seeded with `broader` edges up to `GroupBenefits`):
 
-| Line | Concept added | Real source wired? |
+| Line | Concept | Real source wired? |
 |---|---|---|
-| Life Insurance | `LifeInsurance` | **Yes** — NAIC consumer page verified structurally compatible; extracting real definitions live. |
-| Group Benefits | `GroupBenefits` | No — gap, no source identified yet |
-| Pet Insurance | `PetInsurance` | No — gap, no source identified yet |
-| Crop Insurance | `CropInsurance` | No — technical extraction gap (source known, extractor can't parse it yet) |
+| Life Insurance | `LifeInsurance` | **Yes** — NAIC consumer page. |
+| Pet Insurance | `PetInsurance` | **Yes** — NAPHIA's Pet Insurance Buying Guide. |
+| Group Benefits | `GroupBenefits` | No — gap. DOL/EBSA blocks all automated fetches (HTTP 403, confirmed with full browser headers, not a curl artifact); NAIC has no dedicated page. |
+| Group Health/Medical/Vision/Dental/Disability Benefits | 5 concepts | No — gap, no source identified yet for any of these. |
+| Group Life Benefits | `GroupLifeBenefits` | No — technical extraction gap. A real, on-topic IRS page exists (IRC §79 group-term life exclusion) but its content sits ~6 wrapper divs below the page's `<h1>`, past this extractor's 2-level fallback. |
+| Crop Insurance | `CropInsurance` | No — technical extraction gap (USDA RMA's nested Drupal structure). |
+
+Two things worth calling out from this pass:
+
+- **A generalizable extractor improvement came out of closing the Pet Insurance gap.** NAPHIA's
+  guide phrases its definition as an FAQ heading ("What Is Pet Health Insurance?") rather than the
+  bare term — added `stripFaqQuestionWrapper()` so `heading.next()`-based term matching also
+  recognizes "What Is/Are X?" phrasing. This is a real pattern (seen forming on other government
+  sites too), not a one-off hack for a single page.
+- **DOL/EBSA is a confirmed hard blocker**, not just an unchecked source: every DOL/ERISA URL
+  tried returns HTTP 403 even with a full realistic browser `User-Agent`/`Accept` header set,
+  indicating a WAF/bot-detection block this fetch-based agent cannot get past without real browser
+  automation (headless Chrome, etc.) — a different category of gap than "haven't looked yet."
 
 A missing source is tracked as a **coverage gap to close, not evidence the concept is invalid** —
-this is now structural, not just a comment: `apps/worker/src/agents/source-intelligence/seed/coverage-gaps.ts`
+this is structural, not just a comment: `apps/worker/src/agents/source-intelligence/seed/coverage-gaps.ts`
 records every concept's status (`covered` / `gap` / `technical_extraction_gap`) and the concrete
-next action to close it, and `coverage-gaps.test.ts` fails the suite if this table ever drifts from
-what's actually wired in `seed-sources.ts` (a concept can't be silently marked "covered" without a
-real seed document, and a new concept can't be added without recording its status). The pipeline
-demo (`scripts/run-taxonomy-pipeline-demo.ts`) prints the full gap list with actions on every run.
+next action to close it (including which specific URLs were tried and why they didn't work), and
+`coverage-gaps.test.ts` fails the suite if this table ever drifts from what's actually wired in
+`seed-sources.ts` (a concept can't be silently marked "covered" without a real seed document, and a
+new concept can't be added without recording its status). The pipeline demo
+(`scripts/run-taxonomy-pipeline-demo.ts`) prints the full gap list with actions on every run.
 
 ### Tooling / project hygiene
 
@@ -57,7 +75,7 @@ demo (`scripts/run-taxonomy-pipeline-demo.ts`) prints the full gap list with act
 - `README.md` with architecture diagram, run instructions, and a status table.
 - Postgres persistence verified against **real SQL execution** via `pg-mem` (migration + upsert +
   CHECK constraint + JSONB querying all proven to actually work, not just param-passed).
-- **100/100 tests passing**, clean `tsc -b` project-reference build, clean lint.
+- **106/106 tests passing**, clean `tsc -b` project-reference build, clean lint.
 
 ## Pending / Not Started
 
@@ -76,9 +94,10 @@ demo (`scripts/run-taxonomy-pipeline-demo.ts`) prints the full gap list with act
   `identifier`. `broader`/`narrower`/`contextSignal`/`appliesTo`/`providesCoverageFor`/
   `regulatedBy`/`definedBy` are supported by the Taxonomy Reasoning Agent's logic and tested via
   crafted evidence, but the extractor doesn't yet produce them from live content.
-- **Group Benefits, Pet Insurance, and Crop Insurance have no real evidence sources wired** — the
+- **Group Benefits (all 6 sub-lines) and Crop Insurance have no real evidence sources wired** — the
   concepts exist in the taxonomy but nothing populates them yet. Tracked with a concrete next
-  action per concept in `coverage-gaps.ts` (see above), not just noted here.
+  action per concept in `coverage-gaps.ts` (see above), including which specific URLs were tried
+  and ruled out, not just noted here.
 - Several of the original 10 P&C concepts (`CommercialInsurance`, `PersonalInsurance`,
   `CommercialPropertyInsurance`, `CommercialAutoInsurance`, `GeneralLiability`,
   `CommercialGeneralLiability`, `PersonalPropertyInsurance`, `PersonalAutoPolicy`) are also

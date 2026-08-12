@@ -38,7 +38,7 @@ Taxonomy Reasoning Agent  --(reads evidence)------
 ```bash
 npm install
 npm run build       # tsc -b, project-references build
-npm test             # vitest — 99 tests, no external services required
+npm test             # vitest — 106 tests, no external services required
 npm run lint
 ```
 
@@ -77,7 +77,8 @@ Redis/Postgres in this development environment** (neither was available) — see
 | 8 | Source Intelligence Agent | Done, tested, **run live** against real NAIC pages |
 | — | Taxonomy Reasoning Agent | Done, tested, **run live** end-to-end with the Validator |
 
-99/99 tests passing; full `tsc -b` project-reference build clean.
+106/106 tests passing; full `tsc -b` project-reference build clean. See `ProgressReport.MD` for the
+full complete/pending breakdown, including per-concept source coverage status.
 
 ## Known limitations
 

@@ -37,9 +37,10 @@ describe("SOURCE_COVERAGE (keeps the coverage-gap table honest, not just documen
     }
   });
 
-  it("distinguishes technical extraction gaps (source known) from unresolved gaps (no source yet)", () => {
+  it("distinguishes technical extraction gaps (source known) from unresolved gaps (no source yet) from covered", () => {
     expect(getSourceCoverage("CropInsurance")?.status).toBe("technical_extraction_gap");
+    expect(getSourceCoverage("GroupLifeBenefits")?.status).toBe("technical_extraction_gap");
     expect(getSourceCoverage("GroupBenefits")?.status).toBe("gap");
-    expect(getSourceCoverage("PetInsurance")?.status).toBe("gap");
+    expect(getSourceCoverage("PetInsurance")?.status).toBe("covered");
   });
 });

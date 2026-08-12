@@ -5,12 +5,14 @@ import { conceptToEntity, edgeToRelation, inferenceRecordToEntity } from "@insur
  * The MVP taxonomy backbone: the original 10-concept Commercial/Personal P&C set from
  * requirements.MD, plus 4 additional standalone top-level lines of business (Life Insurance,
  * Group Benefits, Pet Insurance, Crop Insurance — see product-line-terms.ts for why they're
- * standalone rather than nested under Commercial/Personal). Expressed as proper domain objects
- * (not just labeled placeholders) and mapped to the wire format via taxonomy-core's mapper. Every
- * P&C seed edge is assertionMode="inferred" with a matching method="seed_skeleton" InferenceRecord
- * (confidence=0.50, status=provisional, no evidence) — exactly the seed policy governance rule 5
- * requires, so reseeding produces a graph that validateTaxonomy reports as GO. The 4 new segments
- * have no seed edges yet — they're new, real concepts with no fabricated hierarchy underneath.
+ * standalone rather than nested under Commercial/Personal), plus 6 Group Benefits sub-lines
+ * (Group Health Benefits -> Medical/Vision/Dental, Group Disability Benefits, Group Life
+ * Benefits). Expressed as proper domain objects (not just labeled placeholders) and mapped to the
+ * wire format via taxonomy-core's mapper. Every seed edge is assertionMode="inferred" with a
+ * matching method="seed_skeleton" InferenceRecord (confidence=0.50, status=provisional, no
+ * evidence) — exactly the seed policy governance rule 5 requires, so reseeding produces a graph
+ * that validateTaxonomy reports as GO. Life/Group Benefits/Pet/Crop themselves have no seed edges
+ * — they're new top-level concepts with no fabricated hierarchy underneath.
  */
 export const SEED_SCHEME_ID = "insurance-taxonomy-us";
 
@@ -70,6 +72,24 @@ export const seedConcepts: CanonicalConcept[] = [
     prefLabel: "Crop Insurance",
     altLabels: ["Multi-Peril Crop Insurance", "MPCI"],
     contextScope: "both"
+  },
+  // Group Benefits sub-lines (per the employer-sponsored-benefits hierarchy: Health [Medical,
+  // Vision, Dental], Disability, Life). contextScope "commercial" — see product-line-terms.ts.
+  { conceptId: "GroupHealthBenefits", prefLabel: "Group Health Benefits", altLabels: [], contextScope: "commercial" },
+  { conceptId: "GroupMedicalBenefits", prefLabel: "Group Medical Benefits", altLabels: [], contextScope: "commercial" },
+  { conceptId: "GroupVisionBenefits", prefLabel: "Group Vision Benefits", altLabels: [], contextScope: "commercial" },
+  { conceptId: "GroupDentalBenefits", prefLabel: "Group Dental Benefits", altLabels: [], contextScope: "commercial" },
+  {
+    conceptId: "GroupDisabilityBenefits",
+    prefLabel: "Group Disability Benefits",
+    altLabels: [],
+    contextScope: "commercial"
+  },
+  {
+    conceptId: "GroupLifeBenefits",
+    prefLabel: "Group Life Benefits",
+    altLabels: ["Group-Term Life Insurance", "Group Term Life Insurance"],
+    contextScope: "commercial"
   }
 ];
 
@@ -81,7 +101,13 @@ const seedEdgeTriples: Array<[edgeId: string, subjectConceptId: string, objectCo
   ["seed-edge-5", "PersonalPropertyInsurance", "PersonalInsurance"],
   ["seed-edge-6", "HomeownersInsurance", "PersonalPropertyInsurance"],
   ["seed-edge-7", "PersonalAutoInsurance", "PersonalInsurance"],
-  ["seed-edge-8", "PersonalAutoPolicy", "PersonalAutoInsurance"]
+  ["seed-edge-8", "PersonalAutoPolicy", "PersonalAutoInsurance"],
+  ["seed-edge-9", "GroupHealthBenefits", "GroupBenefits"],
+  ["seed-edge-10", "GroupMedicalBenefits", "GroupHealthBenefits"],
+  ["seed-edge-11", "GroupVisionBenefits", "GroupHealthBenefits"],
+  ["seed-edge-12", "GroupDentalBenefits", "GroupHealthBenefits"],
+  ["seed-edge-13", "GroupDisabilityBenefits", "GroupBenefits"],
+  ["seed-edge-14", "GroupLifeBenefits", "GroupBenefits"]
 ];
 
 export const seedEdges: TaxonomyEdge[] = seedEdgeTriples.map(([edgeId, subjectConceptId, objectConceptId]) => ({

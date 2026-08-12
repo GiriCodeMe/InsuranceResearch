@@ -2,6 +2,11 @@ import type { Source } from "@insurance-kb/contracts";
 import type { SeedDocument } from "../discovery.js";
 
 const NAIC: Source = { sourceId: "naic", organizationName: "National Association of Insurance Commissioners", sourceType: "regulator" };
+const NAPHIA: Source = {
+  sourceId: "naphia",
+  organizationName: "North American Pet Health Insurance Association",
+  sourceType: "industry-publication"
+};
 
 /**
  * Every document here was verified against the live page on the date noted (see __fixtures__ for
@@ -31,5 +36,11 @@ export const DEFAULT_SEED_DOCUMENTS: SeedDocument[] = [
     documentId: "naic-consumer-life-insurance",
     url: "https://content.naic.org/consumer/life-insurance.htm",
     termIds: ["LifeInsurance"]
+  },
+  {
+    source: NAPHIA,
+    documentId: "naphia-pet-insurance-buying-guide",
+    url: "https://naphia.org/find-pet-insurance/naphias-pet-insurance-buying-guide/",
+    termIds: ["PetInsurance"]
   }
 ];

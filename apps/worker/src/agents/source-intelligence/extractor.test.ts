@@ -39,6 +39,12 @@ const lifeInsuranceTerm: ProductLineTerm = {
   aliases: [],
   contextScope: "both"
 };
+const petInsuranceTerm: ProductLineTerm = {
+  termId: "PetInsurance",
+  canonicalLabel: "Pet Insurance",
+  aliases: ["Pet Health Insurance"],
+  contextScope: "both"
+};
 
 describe("chunkByHeading + extractDefinitionCandidates against real page structure", () => {
   it("extracts the definition from NAIC's Homeowners Insurance page (h1 wrapped in a heading container div)", () => {
@@ -71,6 +77,19 @@ describe("chunkByHeading + extractDefinitionCandidates against real page structu
     const candidates = extractDefinitionCandidates(chunks[0], lifeInsuranceTerm);
     expect(candidates).toHaveLength(1);
     expect(candidates[0].rawValue).toContain("Life insurance and annuities can be an important part");
+  });
+
+  it("matches an FAQ-style heading ('What Is X?') against NAPHIA's Pet Insurance buying guide, but not the unreachable page-title h1", () => {
+    const html = loadFixture("naphia-pet-insurance-buying-guide.html");
+    const chunks = chunkByHeading(html, "naphia-pet-insurance-buying-guide");
+    // Only the h2 chunks — the h1 page title's paragraphs are nested one level too deep
+    // (inside a sibling <div>, not a true sibling <p>) for this heuristic to reach.
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0].text.startsWith("What Is Pet Health Insurance?")).toBe(true);
+
+    const candidates = extractDefinitionCandidates(chunks[0], petInsuranceTerm);
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].rawValue).toContain("Pet health insurance is a proactive and useful financial tool");
   });
 
   it("does not produce a definition candidate for a term the heading doesn't name (explicit-only, FR-003)", () => {

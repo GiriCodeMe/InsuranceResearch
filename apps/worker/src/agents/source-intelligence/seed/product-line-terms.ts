@@ -67,5 +67,23 @@ export const SEED_PRODUCT_LINE_TERMS: ProductLineTerm[] = [
     canonicalLabel: "Crop Insurance",
     aliases: ["Multi-Peril Crop Insurance", "MPCI"],
     contextScope: "both"
+  },
+  // Group Benefits sub-lines — contextScope "commercial" (the employer, not the individual
+  // employee, is the policyholder/counterparty in a group-sponsored plan).
+  { termId: "GroupHealthBenefits", canonicalLabel: "Group Health Benefits", aliases: [], contextScope: "commercial" },
+  { termId: "GroupMedicalBenefits", canonicalLabel: "Group Medical Benefits", aliases: [], contextScope: "commercial" },
+  { termId: "GroupVisionBenefits", canonicalLabel: "Group Vision Benefits", aliases: [], contextScope: "commercial" },
+  { termId: "GroupDentalBenefits", canonicalLabel: "Group Dental Benefits", aliases: [], contextScope: "commercial" },
+  {
+    termId: "GroupDisabilityBenefits",
+    canonicalLabel: "Group Disability Benefits",
+    aliases: [],
+    contextScope: "commercial"
+  },
+  {
+    termId: "GroupLifeBenefits",
+    canonicalLabel: "Group Life Benefits",
+    aliases: ["Group-Term Life Insurance", "Group Term Life Insurance"],
+    contextScope: "commercial"
   }
 ];

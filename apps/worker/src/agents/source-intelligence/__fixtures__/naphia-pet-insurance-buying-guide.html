@@ -1,0 +1,25 @@
+<!-- Trimmed, deterministic fixture reproducing the real structure of
+     https://naphia.org/find-pet-insurance/naphias-pet-insurance-buying-guide/ as of 2026-08-12.
+     Note the h1 (page title) is wrapped in its own <header>, with the real content in a sibling
+     <div class="entry-content"> — its intro paragraphs are one level too deep for this extractor's
+     heading+paragraph heuristic, but each <h2> FAQ-style subheading (e.g. "What Is Pet Health
+     Insurance?") IS a true sibling of its own following <p>, so it chunks correctly. -->
+<html>
+<body>
+<main id="main" class="site-main" role="main">
+  <article id="post-4889" class="post-4889 page type-page status-publish hentry">
+    <header class="entry-header">
+      <h1 class="entry-title"><span>NAPHIA's Pet Insurance Buying Guide</span></h1>
+    </header>
+    <div class="entry-content">
+      <p class="wp-block-paragraph">Unexpected veterinary treatment can cost hundreds, and sometimes
+        thousands of dollars.</p>
+
+      <h2 class="wp-block-heading"><strong>What Is Pet Health Insurance?</strong></h2>
+      <p class="wp-block-paragraph">Pet health insurance is a proactive and useful financial tool that
+        protects you and your finances against unforeseen veterinary costs.</p>
+    </div>
+  </article>
+</main>
+</body>
+</html>

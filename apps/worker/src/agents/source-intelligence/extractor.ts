@@ -68,13 +68,22 @@ function headingAndBody(chunk: Chunk): { headingLine: string; body: string } {
   return { headingLine, body: rest.join(" ") };
 }
 
+const FAQ_QUESTION_WRAPPER = /^what\s+(?:is|are)\s+(.+?)\??$/i;
+
 function normalizeHeading(text: string): string {
   return text.replace(PARENTHETICAL_ACRONYM, "").trim().toLowerCase();
 }
 
+/** "What Is X?" / "What Are X?" -> "X" — a common FAQ-style heading phrasing (seen on NAPHIA's
+ * consumer guide, and elsewhere) that otherwise wouldn't exact-match a term's plain label. */
+function stripFaqQuestionWrapper(text: string): string {
+  const match = text.match(FAQ_QUESTION_WRAPPER);
+  return match ? match[1] : text;
+}
+
 function headingMatchesTerm(headingLine: string, term: ProductLineTerm): boolean {
-  const normalized = normalizeHeading(headingLine);
-  return [term.canonicalLabel, ...term.aliases].some((label) => label.toLowerCase() === normalized);
+  const labels = [term.canonicalLabel, ...term.aliases].map((label) => label.toLowerCase());
+  return [headingLine, stripFaqQuestionWrapper(headingLine)].some((candidate) => labels.includes(normalizeHeading(candidate)));
 }
 
 /** Explicit only: fires solely when the heading is a name/alias of `term` — never on implied mentions. */

@@ -122,6 +122,6 @@ describe("end-to-end: HttpGraphClient + HttpEvidenceClient + validateTaxonomy ag
 
     expect(report.status).toBe("GO");
     expect(report.errorCount).toBe(0);
-    expect(report.checkedEdges).toBe(8);
+    expect(report.checkedEdges).toBe(14);
   });
 });
