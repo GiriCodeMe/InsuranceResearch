@@ -25,6 +25,12 @@ export interface SourceIntelligenceRunResult {
   evidenceWritten: number;
   evidenceAlreadyKnown: number;
   failures: SourceFailure[];
+  /**
+   * Every evidenceId this run touched (newly written or already known), in the order encountered.
+   * The EvidenceStore contract has no query/list endpoint (requirements.MD), so this list is how a
+   * downstream consumer (the Taxonomy Reasoning Agent, or its queue job) learns what to reason over.
+   */
+  evidenceIds: string[];
 }
 
 export interface SourceIntelligenceRunOptions {
@@ -46,6 +52,7 @@ export async function runSourceIntelligenceAgent(
   const plan = planSourceIntelligenceRun(seedDocuments, terms);
 
   const failures: SourceFailure[] = [];
+  const evidenceIds: string[] = [];
   let documentsProcessed = 0;
   let evidenceWritten = 0;
   let evidenceAlreadyKnown = 0;
@@ -78,6 +85,7 @@ export async function runSourceIntelligenceAgent(
             retrievedDate: fetchResult.retrievedDate
           });
 
+          evidenceIds.push(record.evidenceId);
           const alreadyKnown = await evidenceClient.hasEvidence(record.evidenceId);
           if (alreadyKnown) {
             evidenceAlreadyKnown++;
@@ -90,5 +98,12 @@ export async function runSourceIntelligenceAgent(
     }
   }
 
-  return { documentsProcessed, documentsFailed: failures.length, evidenceWritten, evidenceAlreadyKnown, failures };
+  return {
+    documentsProcessed,
+    documentsFailed: failures.length,
+    evidenceWritten,
+    evidenceAlreadyKnown,
+    failures,
+    evidenceIds
+  };
 }

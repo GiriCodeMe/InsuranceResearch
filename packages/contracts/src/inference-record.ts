@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-export const InferenceMethodSchema = z.enum(["seed_skeleton", "llm_inference"]);
+/**
+ * "heuristic_placement" is the Taxonomy Reasoning Agent's deterministic fallback: when a concept
+ * has no edge at all yet, place it under its top-level context concept (Commercial/Personal
+ * Insurance) using the term's known contextScope — no LLM involved in this MVP (research.md).
+ */
+export const InferenceMethodSchema = z.enum(["seed_skeleton", "llm_inference", "heuristic_placement"]);
 export type InferenceMethod = z.infer<typeof InferenceMethodSchema>;
 
 export const InferenceStatusSchema = z.enum(["provisional", "validated"]);

@@ -11,7 +11,9 @@ export type SourceIntelligenceJobData = z.infer<typeof SourceIntelligenceJobData
 
 export const TaxonomyReasoningJobDataSchema = z.object({
   schemeId: z.string().min(1),
-  taxonomyVersion: z.string().min(1)
+  taxonomyVersion: z.string().min(1),
+  /** Handed forward from the Source Intelligence run (or another producer) — see agent.ts's docstring. */
+  evidenceIds: z.array(z.string().min(1)).default([])
 });
 export type TaxonomyReasoningJobData = z.infer<typeof TaxonomyReasoningJobDataSchema>;
 

@@ -20,10 +20,20 @@ describe("TaxonomyValidationJobDataSchema", () => {
 });
 
 describe("TaxonomyReasoningJobDataSchema", () => {
-  it("accepts a valid job payload", () => {
+  it("accepts a valid job payload and defaults evidenceIds to empty", () => {
     expect(
       TaxonomyReasoningJobDataSchema.parse({ schemeId: "insurance-taxonomy-us", taxonomyVersion: "0.1.0" })
-    ).toEqual({ schemeId: "insurance-taxonomy-us", taxonomyVersion: "0.1.0" });
+    ).toEqual({ schemeId: "insurance-taxonomy-us", taxonomyVersion: "0.1.0", evidenceIds: [] });
+  });
+
+  it("accepts explicit evidenceIds handed forward from the Source Intelligence run", () => {
+    expect(
+      TaxonomyReasoningJobDataSchema.parse({
+        schemeId: "insurance-taxonomy-us",
+        taxonomyVersion: "0.1.0",
+        evidenceIds: ["ev-1", "ev-2"]
+      }).evidenceIds
+    ).toEqual(["ev-1", "ev-2"]);
   });
 
   it("rejects an empty schemeId", () => {
