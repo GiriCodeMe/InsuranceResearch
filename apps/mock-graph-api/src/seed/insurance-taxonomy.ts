@@ -2,11 +2,15 @@ import type { CanonicalConcept, Entity, InferenceRecord, Relation, TaxonomyEdge 
 import { conceptToEntity, edgeToRelation, inferenceRecordToEntity } from "@insurance-kb/taxonomy-core";
 
 /**
- * The 10-concept MVP taxonomy backbone from requirements.MD, expressed as proper domain objects
+ * The MVP taxonomy backbone: the original 10-concept Commercial/Personal P&C set from
+ * requirements.MD, plus 4 additional standalone top-level lines of business (Life Insurance,
+ * Group Benefits, Pet Insurance, Crop Insurance — see product-line-terms.ts for why they're
+ * standalone rather than nested under Commercial/Personal). Expressed as proper domain objects
  * (not just labeled placeholders) and mapped to the wire format via taxonomy-core's mapper. Every
- * seed edge is assertionMode="inferred" with a matching method="seed_skeleton" InferenceRecord
+ * P&C seed edge is assertionMode="inferred" with a matching method="seed_skeleton" InferenceRecord
  * (confidence=0.50, status=provisional, no evidence) — exactly the seed policy governance rule 5
- * requires, so reseeding produces a graph that validateTaxonomy reports as GO.
+ * requires, so reseeding produces a graph that validateTaxonomy reports as GO. The 4 new segments
+ * have no seed edges yet — they're new, real concepts with no fabricated hierarchy underneath.
  */
 export const SEED_SCHEME_ID = "insurance-taxonomy-us";
 
@@ -50,6 +54,22 @@ export const seedConcepts: CanonicalConcept[] = [
     prefLabel: "Personal Auto Insurance",
     altLabels: ["PAP"],
     contextScope: "personal"
+  },
+  // Additional top-level lines of business, modeled as standalone segments (contextScope "both")
+  // rather than forced under Commercial/Personal — see product-line-terms.ts for the rationale.
+  { conceptId: "LifeInsurance", prefLabel: "Life Insurance", altLabels: [], contextScope: "both" },
+  {
+    conceptId: "GroupBenefits",
+    prefLabel: "Group Benefits",
+    altLabels: ["Group Insurance", "Employee Benefits"],
+    contextScope: "both"
+  },
+  { conceptId: "PetInsurance", prefLabel: "Pet Insurance", altLabels: ["Pet Health Insurance"], contextScope: "both" },
+  {
+    conceptId: "CropInsurance",
+    prefLabel: "Crop Insurance",
+    altLabels: ["Multi-Peril Crop Insurance", "MPCI"],
+    contextScope: "both"
   }
 ];
 

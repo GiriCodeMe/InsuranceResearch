@@ -33,6 +33,12 @@ const cglTerm: ProductLineTerm = {
   aliases: ["CGL"],
   contextScope: "commercial"
 };
+const lifeInsuranceTerm: ProductLineTerm = {
+  termId: "LifeInsurance",
+  canonicalLabel: "Life Insurance",
+  aliases: [],
+  contextScope: "both"
+};
 
 describe("chunkByHeading + extractDefinitionCandidates against real page structure", () => {
   it("extracts the definition from NAIC's Homeowners Insurance page (h1 wrapped in a heading container div)", () => {
@@ -55,6 +61,16 @@ describe("chunkByHeading + extractDefinitionCandidates against real page structu
     const candidates = extractDefinitionCandidates(autoChunk!, personalAutoTerm);
     expect(candidates).toHaveLength(1);
     expect(candidates[0].rawValue).toContain("Auto insurance is one of the most used types of personal insurance");
+  });
+
+  it("extracts the definition from NAIC's Life Insurance page (same wrapped-h1 structure)", () => {
+    const html = loadFixture("naic-life-insurance.html");
+    const chunks = chunkByHeading(html, "naic-consumer-life-insurance");
+    expect(chunks).toHaveLength(1);
+
+    const candidates = extractDefinitionCandidates(chunks[0], lifeInsuranceTerm);
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].rawValue).toContain("Life insurance and annuities can be an important part");
   });
 
   it("does not produce a definition candidate for a term the heading doesn't name (explicit-only, FR-003)", () => {

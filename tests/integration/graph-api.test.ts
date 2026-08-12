@@ -60,13 +60,13 @@ describe("mock-graph-api", () => {
     expect(body[0].name).toBe("A");
   });
 
-  it("reseed loads the 10-concept MVP taxonomy backbone with its 8 seed_skeleton inference records", async () => {
+  it("reseed loads the 14-concept MVP taxonomy backbone (10 P&C + 4 standalone lines of business) with its 8 seed_skeleton inference records", async () => {
     await app.inject({ method: "POST", url: "/__admin/reseed" });
     const res = await app.inject({ method: "POST", url: "/read_graph" });
     const body = JSON.parse(res.body);
     const concepts = body.entities.filter((e: { entityType: string }) => e.entityType === "ProductLine");
     const inferenceRecords = body.entities.filter((e: { entityType: string }) => e.entityType === "InferenceRecord");
-    expect(concepts).toHaveLength(10);
+    expect(concepts).toHaveLength(14);
     expect(inferenceRecords).toHaveLength(8);
     expect(body.relations).toHaveLength(8);
   });
