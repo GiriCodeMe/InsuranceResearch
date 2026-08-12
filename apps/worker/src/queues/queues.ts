@@ -1,10 +1,13 @@
 import { Queue } from "bullmq";
 import { Redis } from "ioredis";
 import {
+  SOURCE_INTELLIGENCE_QUEUE_NAME,
+  SourceIntelligenceJobDataSchema,
   TAXONOMY_REASONING_QUEUE_NAME,
   TAXONOMY_VALIDATION_QUEUE_NAME,
   TaxonomyReasoningJobDataSchema,
   TaxonomyValidationJobDataSchema,
+  type SourceIntelligenceJobData,
   type TaxonomyReasoningJobData,
   type TaxonomyValidationJobData
 } from "./jobs.js";
@@ -15,6 +18,17 @@ import {
  */
 export function createRedisConnection(redisUrl: string): Redis {
   return new Redis(redisUrl, { maxRetriesPerRequest: null });
+}
+
+export function createSourceIntelligenceQueue(connection: Redis): Queue<SourceIntelligenceJobData> {
+  return new Queue<SourceIntelligenceJobData>(SOURCE_INTELLIGENCE_QUEUE_NAME, { connection });
+}
+
+export async function enqueueSourceIntelligence(
+  queue: Queue<SourceIntelligenceJobData>,
+  data: SourceIntelligenceJobData
+) {
+  return queue.add("run", SourceIntelligenceJobDataSchema.parse(data));
 }
 
 export function createTaxonomyReasoningQueue(connection: Redis): Queue<TaxonomyReasoningJobData> {

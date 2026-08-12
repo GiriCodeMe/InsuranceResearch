@@ -7,7 +7,9 @@ import { registerReset } from "./admin/reset.js";
 import { registerReseed } from "./admin/reseed.js";
 
 export function buildServer(): ReturnType<typeof Fastify> {
-  const app = Fastify({ logger: process.env.NODE_ENV !== "test" });
+  // find-my-way's default maxParamLength (100) is too easily hit by content-derived evidence ids;
+  // raised generously since this store's ids are arbitrary strings, not a fixed-format key.
+  const app = Fastify({ logger: process.env.NODE_ENV !== "test", maxParamLength: 500 });
   const store = new EvidenceStore();
 
   registerGetEvidence(app, store);

@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "tsc -b --pretty",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . --ext .ts",

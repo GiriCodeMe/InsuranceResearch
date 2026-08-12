@@ -1,7 +1,13 @@
 import { z } from "zod";
 
+export const SOURCE_INTELLIGENCE_QUEUE_NAME = "sourceIntelligence";
 export const TAXONOMY_REASONING_QUEUE_NAME = "taxonomyReasoning";
 export const TAXONOMY_VALIDATION_QUEUE_NAME = "taxonomyValidation";
+
+export const SourceIntelligenceJobDataSchema = z.object({
+  requestId: z.string().min(1)
+});
+export type SourceIntelligenceJobData = z.infer<typeof SourceIntelligenceJobDataSchema>;
 
 export const TaxonomyReasoningJobDataSchema = z.object({
   schemeId: z.string().min(1),

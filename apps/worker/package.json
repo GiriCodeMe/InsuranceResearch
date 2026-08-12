@@ -15,6 +15,8 @@
     "@insurance-kb/graph-client": "*",
     "@insurance-kb/taxonomy-core": "*",
     "bullmq": "^5.12.0",
+    "cheerio": "^1.0.0",
+    "domhandler": "^5.0.3",
     "ioredis": "^5.4.1",
     "pg": "^8.12.0",
     "zod": "^3.23.0"
